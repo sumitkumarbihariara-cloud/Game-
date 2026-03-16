@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NECPL Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Hind:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#1a6b2e;--gl:#25943f;--gb:#2ecc5f;
+  --gold:#f0a500;--goldl:#f7c948;
+  --red:#e74c3c;--blue:#3b82f6;--purple:#8b5cf6;
+  --d:#060e07;--d2:#0c1a0e;--d3:#112214;--d4:#162b19;
+  --w:#fff;--muted:#5a7a5e;
+  --r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Space Grotesk',sans-serif;background:var(--d);color:#e0ffe5;min-height:100vh;overflow-x:hidden;}
+
+/* ══ ANIMATIONS ══ */
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(240,165,0,0.4)}50%{box-shadow:0 0 0 8px rgba(240,165,0,0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes countUp{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(240,165,0,.3)}50%{text-shadow:0 0 25px rgba(240,165,0,.8),0 0 50px rgba(240,165,0,.3)}}
+@keyframes borderPulse{0%,100%{border-color:rgba(240,165,0,.2)}50%{border-color:rgba(240,165,0,.7)}}
+@keyframes floatUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+/* ══ LOGIN ══ */
+#loginScreen{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--d);
+  overflow:hidden;
+}
+.login-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 40%,rgba(26,107,46,.15) 0%,transparent 60%),
+             radial-gradient(ellipse at 70% 70%,rgba(240,165,0,.06) 0%,transparent 50%);
+}
+.login-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(46,204,95,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(46,204,95,.03) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.login-particles{position:absolute;inset:0;pointer-events:none;}
+.lp{position:absolute;width:3px;height:3px;background:var(--gold);border-radius:50%;animation:floatUp 3s ease-in-out infinite;}
+.login-box{
+  position:relative;z-index:2;
+  background:rgba(12,26,14,.9);
+  border:1px solid rgba(240,165,0,.2);
+  border-radius:16px;
+  padding:48px 44px;
+  width:420px;max-width:92vw;
+  text-align:center;
+  backdrop-filter:blur(20px);
+  animation:fadeIn .6s ease both;
+  box-shadow:0 0 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.login-box::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(135deg,rgba(240,165,0,.05),transparent,rgba(26,107,46,.05));
+  pointer-events:none;
+}
+.login-logo{
+  width:72px;height:72px;background:linear-gradient(135deg,var(--gold),#e8931a);
+  border-radius:50%;margin:0 auto 20px;
+  display:flex;align-items:center;justify-content:center;font-size:32px;
+  box-shadow:0 0 30px rgba(240,165,0,.4);
+  animation:floatUp 3s ease-in-out infinite;
+}
+.login-title{font-family:'Teko',sans-serif;font-size:2.2rem;letter-spacing:4px;color:var(--gold);animation:glow 3s ease-in-out infinite;}
+.login-sub{font-size:12px;color:rgba(255,255,255,.3);letter-spacing:2px;margin:6px 0 32px;text-transform:uppercase;}
+.li{
+  width:100%;padding:14px 18px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  color:#e0ffe5;font-family:'Space Grotesk',sans-serif;font-size:15px;
+  outline:none;margin-bottom:14px;border-radius:8px;
+  transition:all .3s;
+}
+.li:focus{border-color:var(--gold);background:rgba(240,165,0,.05);box-shadow:0 0 0 3px rgba(240,165,0,.1);}
+.li::placeholder{color:rgba(255,255,255,.2);}
+#loginBtn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--gold),#e8931a);
+  color:#0c1a0e;border:none;border-radius:8px;
+  font-family:'Teko',sans-serif;font-size:1.3rem;letter-spacing:3px;
+  cursor:pointer;transition:all .3s;
+  position:relative;overflow:hidden;
+}
+#loginBtn::before{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  transition:left .5s;
+}
+#loginBtn:hover::before{left:100%;}
+#loginBtn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(240,165,0,.4);}
+#loginBtn:active{transform:translateY(0);}
+.login-err{color:#ff6b6b;font-size:13px;margin-top:12px;display:none;animation:fadeIn .3s ease;}
+.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0 0;color:rgba(255,255,255,.15);font-size:11px;letter-spacing:2px;}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+
+/* ══ NAV ══ */
+#adminApp{display:none;}
+.anav{
+  position:fixed;top:0;left:0;right:0;height:64px;z-index:200;
+  background:rgba(6,14,7,.95);
+  border-bottom:1px solid rgba(240,165,0,.15);
+  backdrop-filter:blur(20px);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  animation:slideUp .4s ease both;
+}
+.anav::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:.4;
+}
+.nav-logo-wrap{display:flex;align-items:center;gap:12px;}
+.nav-badge{
+  width:38px;height:38px;background:linear-gradient(135deg,var(--gold),#e8931a);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;box-shadow:0 0 15px rgba(240,165,0,.3);
+}
+.nav-title{font-family:'Teko',sans-serif;font-size:1.4rem;letter-spacing:3px;color:var(--gold);}
+.nav-title span{color:rgba(255,255,255,.35);font-size:.8rem;letter-spacing:1px;display:block;line-height:1;font-family:'Space Grotesk',sans-serif;font-weight:400;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-time{font-size:12px;color:rgba(255,255,255,.55);letter-spacing:1px;font-family:monospace;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:6px 12px;border-radius:6px;}
+#logoutBtn{
+  background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);
+  color:#ff6b6b;padding:8px 18px;border-radius:6px;
+  font-family:'Teko',sans-serif;font-size:1rem;letter-spacing:1px;
+  cursor:pointer;transition:all .25s;
+}
+#logoutBtn:hover{background:rgba(231,76,60,.2);border-color:var(--red);transform:translateY(-1px);}
+
+/* ══ LAYOUT ══ */
+.abody{display:flex;padding-top:64px;min-height:100vh;}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:240px;flex-shrink:0;position:fixed;top:64px;bottom:0;
+  background:var(--d2);
+  border-right:1px solid rgba(255,255,255,.04);
+  padding:20px 0;overflow-y:auto;
+  animation:slideRight .4s ease both;
+}
+.sidebar::-webkit-scrollbar{width:3px;}
+.sidebar::-webkit-scrollbar-track{background:transparent;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(240,165,0,.2);border-radius:2px;}
+.sb-section{
+  font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.15);
+  text-transform:uppercase;padding:20px 20px 8px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 20px;cursor:pointer;
+  color:rgba(255,255,255,.4);font-size:13px;font-weight:500;
+  border-left:2px solid transparent;
+  transition:all .25s;position:relative;
+  margin:2px 0;
+}
+.sb-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.03);}
+.sb-item.active{
+  color:var(--gold);background:rgba(240,165,0,.06);
+  border-left-color:var(--gold);
+}
+.sb-item.active::after{
+  content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;background:rgba(240,165,0,.3);border-radius:2px 0 0 2px;
+}
+.sb-icon{font-size:1rem;width:20px;text-align:center;transition:transform .2s;}
+.sb-item:hover .sb-icon{transform:scale(1.15);}
+.sb-item.active .sb-icon{filter:drop-shadow(0 0 4px rgba(240,165,0,.5));}
+.sb-badge{
+  background:var(--red);color:white;font-size:10px;
+  padding:2px 7px;border-radius:10px;margin-left:auto;
+  font-family:'Hind',sans-serif;display:none;
+  animation:pulse 2s infinite;
+}
+
+/* ══ MAIN ══ */
+.mcontent{margin-left:240px;flex:1;padding:28px;min-height:calc(100vh - 64px);}
+.page{display:none;animation:fadeIn .4s ease both;}
+.page.active{display:block;}
+.ph{margin-bottom:28px;}
+.ph h1{font-family:'Teko',sans-serif;font-size:2.2rem;letter-spacing:2px;color:white;line-height:1;}
+.ph p{color:rgba(255,255,255,.3);font-size:13px;margin-top:6px;}
+.ph-line{width:40px;height:2px;background:linear-gradient(90deg,var(--gold),transparent);margin-top:8px;}
+
+/* ══ STAT CARDS ══ */
+.sg3{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+.scard{
+  background:var(--d3);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:var(--r);padding:20px;
+  position:relative;overflow:hidden;
+  cursor:default;transition:all .3s;
+}
+.scard:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.1);}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0;}
+.sc-g::before{background:linear-gradient(90deg,var(--gold),var(--goldl));}
+.sc-gr::before{background:linear-gradient(90deg,var(--gb),#27ae60);}
+.sc-r::before{background:linear-gradient(90deg,var(--red),#c0392b);}
+.sc-b::before{background:linear-gradient(90deg,var(--blue),#2980b9);}
+.sc-p::before{background:linear-gradient(90deg,var(--purple),#7c3aed);}
+.scard-glow{
+  position:absolute;top:-20px;right:-20px;
+  width:80px;height:80px;border-radius:50%;
+  filter:blur(20px);opacity:.08;
+}
+.sc-g .scard-glow{background:var(--gold);}
+.sc-gr .scard-glow{background:var(--gb);}
+.sc-r .scard-glow{background:var(--red);}
+.sc-b .scard-glow{background:var(--blue);}
+.sc-p .scard-glow{background:var(--purple);}
+.snum{
+  font-family:'Teko',sans-serif;font-size:3rem;line-height:1;color:white;
+  margin-bottom:4px;
+  animation:countUp .5s ease both;
+}
+.slbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);}
+.sico{position:absolute;right:14px;bottom:12px;font-size:2.2rem;opacity:.12;}
+
+/* ══ TABLE ══ */
+.tw{background:var(--d3);border:1px solid rgba(255,255,255,.05);border-radius:var(--r);overflow:hidden;overflow-x:auto;}
+.tt{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.ts{flex:1;min-width:150px;padding:9px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:#e0ffe5;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;border-radius:6px;transition:all .2s;}
+.ts:focus{border-color:var(--gold);background:rgba(240,165,0,.04);}
+.tf{padding:9px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:#e0ffe5;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none;border-radius:6px;cursor:pointer;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+thead th{padding:10px 14px;text-align:left;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;background:rgba(0,0,0,.2);}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s;}
+tbody tr:hover{background:rgba(255,255,255,.02);}
+tbody td{padding:11px 14px;font-size:13px;color:rgba(255,255,255,.65);white-space:nowrap;}
+.tdn{font-weight:600;color:white;}
+.spill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.spill.pending{background:rgba(240,165,0,.12);color:var(--gold);border:1px solid rgba(240,165,0,.2);}
+.spill.approved{background:rgba(46,204,95,.12);color:var(--gb);border:1px solid rgba(46,204,95,.2);}
+.spill.rejected{background:rgba(231,76,60,.12);color:#ff8074;border:1px solid rgba(231,76,60,.2);}
+.abtns{display:flex;gap:4px;flex-wrap:wrap;}
+.ab{padding:5px 10px;border:none;font-family:'Teko',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;border-radius:5px;transition:all .2s;white-space:nowrap;}
+.ab:hover{transform:translateY(-1px);}
+.ab-ap{background:rgba(46,204,95,.15);color:var(--gb);border:1px solid rgba(46,204,95,.2);}
+.ab-rj{background:rgba(231,76,60,.12);color:#ff8074;border:1px solid rgba(231,76,60,.2);}
+.ab-dl{background:rgba(255,255,255,.04);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.07);}
+.ab-wa{background:rgba(37,211,102,.12);color:#25D366;border:1px solid rgba(37,211,102,.2);}
+.ab-utr{background:rgba(240,165,0,.12);color:var(--gold);border:1px solid rgba(240,165,0,.2);}
+.erow td{text-align:center;padding:48px;color:rgba(255,255,255,.15);font-size:14px;}
+
+/* ══ SETTINGS ══ */
+.sg2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.sc2{background:var(--d3);border:1px solid rgba(255,255,255,.05);border-radius:var(--r);padding:22px;transition:border-color .2s;}
+.sc2:hover{border-color:rgba(240,165,0,.1);}
+.sc2.full{grid-column:span 2;}
+.sc2 h3{font-family:'Teko',sans-serif;font-size:1.15rem;letter-spacing:2px;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:6px;}
+.fi{width:100%;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:#e0ffe5;font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;border-radius:6px;transition:all .2s;}
+.fi:focus{border-color:var(--gold);background:rgba(240,165,0,.03);box-shadow:0 0 0 2px rgba(240,165,0,.08);}
+.fi.ta{resize:vertical;min-height:80px;}
+.sbtn{
+  padding:10px 22px;background:linear-gradient(135deg,var(--gold),#e8931a);
+  color:var(--d);border:none;border-radius:6px;
+  font-family:'Teko',sans-serif;font-size:1.05rem;letter-spacing:2px;
+  cursor:pointer;transition:all .25s;position:relative;overflow:hidden;
+}
+.sbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transform:translateX(-100%);transition:transform .4s;}
+.sbtn:hover::after{transform:translateX(100%);}
+.sbtn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(240,165,0,.3);}
+.sbtn.green{background:linear-gradient(135deg,var(--gb),#27ae60);color:white;}
+.sbtn.blue{background:linear-gradient(135deg,var(--blue),#2980b9);color:white;}
+.sbtn.red{background:linear-gradient(135deg,var(--red),#c0392b);color:white;}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.tr:last-child{border-bottom:none;}
+.trl{font-size:14px;color:rgba(255,255,255,.65);}
+.trs{font-size:11px;color:rgba(255,255,255,.2);margin-top:2px;}
+.tog{position:relative;width:44px;height:24px;flex-shrink:0;}
+.tog input{display:none;}
+.togsl{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:12px;cursor:pointer;transition:.3s;}
+.togsl::before{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:.3s;box-shadow:0 2px 4px rgba(0,0,0,.3);}
+.tog input:checked + .togsl{background:var(--gb);}
+.tog input:checked + .togsl::before{transform:translateX(20px);}
+
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:28px;right:28px;z-index:99999;
+  background:var(--d3);
+  border:1px solid rgba(255,255,255,.06);
+  border-left:3px solid var(--gold);
+  padding:14px 20px;font-size:13px;color:#e0ffe5;border-radius:8px;
+  transform:translateY(80px) scale(.9);opacity:0;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;max-width:300px;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);
+}
+.toast.show{transform:none;opacity:1;}
+.toast.success{border-left-color:var(--gb);}
+.toast.error{border-left-color:var(--red);}
+
+/* ══ LOADING SHIMMER ══ */
+.shimmer{
+  background:linear-gradient(90deg,var(--d3) 25%,rgba(255,255,255,.04) 50%,var(--d3) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:4px;height:14px;
+}
+
+/* ══ MOBILE ══ */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .mcontent{margin-left:0;padding:16px;}
+  .sg2{grid-template-columns:1fr;}
+  .sc2.full{grid-column:span 1;}
+  .sg3{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen">
+  <div class="login-bg"></div>
+  <div class="login-grid"></div>
+  <div class="login-particles">
+    <div class="lp" style="left:10%;top:20%;animation-delay:0s;animation-duration:4s;"></div>
+    <div class="lp" style="left:30%;top:60%;animation-delay:.5s;animation-duration:3s;"></div>
+    <div class="lp" style="left:60%;top:15%;animation-delay:1s;animation-duration:5s;"></div>
+    <div class="lp" style="left:80%;top:70%;animation-delay:1.5s;animation-duration:3.5s;"></div>
+    <div class="lp" style="left:50%;top:85%;animation-delay:.8s;animation-duration:4.5s;"></div>
+    <div class="lp" style="left:90%;top:35%;animation-delay:2s;animation-duration:3s;"></div>
+  </div>
+  <div class="login-box">
+    <div class="login-logo">🏏</div>
+    <div class="login-title">ADMIN LOGIN</div>
+    <div class="login-sub">NECPL · Authorized Access Only</div>
+    <input class="li" type="text" id="loginUser" placeholder="👤  Username" autocomplete="off">
+    <input class="li" type="password" id="loginPass" placeholder="🔑  Password">
+    <button id="loginBtn" onclick="handleLogin()">LOGIN →</button>
+    <div class="login-err" id="loginErr">❌ Wrong username or password</div>
+    <div class="login-divider">NECPL Season 1</div>
+  </div>
+</div>
+
+<!-- ══ ADMIN APP ══ -->
+<div id="adminApp">
+
+  <!-- NAV -->
+  <nav class="anav">
+    <div class="nav-logo-wrap">
+      <div class="nav-badge">🏏</div>
+      <div class="nav-title">NECPL <span>Admin Panel · Season 1</span></div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-time" id="navClock"></div>
+      <button id="logoutBtn">⬅ Logout</button>
+    </div>
+  </nav>
+
+  <div class="abody">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-section">Main</div>
+      <div class="sb-item active" onclick="showPage('dashboard',this)">
+        <span class="sb-icon">📊</span> Dashboard
+      </div>
+      <div class="sb-item" onclick="showPage('registrations',this)">
+        <span class="sb-icon">📋</span> Registrations
+        <span class="sb-badge" id="pendingBadge">0</span>
+      </div>
+
+      <div class="sb-section">Site Control</div>
+      <div class="sb-item" onclick="showPage('settings',this)"><span class="sb-icon">⚙️</span> Site Settings</div>
+      <div class="sb-item" onclick="showPage('fees',this)"><span class="sb-icon">💰</span> Fees & UPI</div>
+      <div class="sb-item" onclick="showPage('broadcast',this)"><span class="sb-icon">📢</span> Announcements</div>
+      <div class="sb-item" onclick="showPage('regcontrol',this)"><span class="sb-icon">🔒</span> Reg. Control</div>
+      <div class="sb-item" onclick="showPage('reviews',this)"><span class="sb-icon">⭐</span> Reviews</div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="mcontent">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="ph">
+          <h1>📊 Dashboard</h1>
+          <p>NECPL Season 1 · Live Overview</p>
+          <div class="ph-line"></div>
+        </div>
+        <div class="sg3">
+          <div class="scard sc-g"><div class="scard-glow"></div><div class="snum" id="statTotal">—</div><div class="slbl">Total Registrations</div><div class="sico">📋</div></div>
+          <div class="scard sc-gr"><div class="scard-glow"></div><div class="snum" id="statApproved">—</div><div class="slbl">Approved</div><div class="sico">✅</div></div>
+          <div class="scard sc-r"><div class="scard-glow"></div><div class="snum" id="statPending">—</div><div class="slbl">Pending Review</div><div class="sico">⏳</div></div>
+          <div class="scard sc-b"><div class="scard-glow"></div><div class="snum" id="statTeams">—</div><div class="slbl">Team Registrations</div><div class="sico">🏟️</div></div>
+          <div class="scard sc-p"><div class="scard-glow"></div><div class="snum" id="statUTR">—</div><div class="slbl">UTR Pending</div><div class="sico">🔢</div></div>
+        </div>
+        <div class="tw">
+          <div class="tt"><span style="font-family:'Teko',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--gold);">🕐 RECENT REGISTRATIONS</span></div>
+          <table><thead><tr><th>Name</th><th>Role</th><th>City</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="recentTbody"><tr class="erow"><td colspan="6">Loading...</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- REGISTRATIONS -->
+      <div class="page" id="page-registrations">
+        <div class="ph"><h1>📋 All Registrations</h1><p>Players & teams manage karo</p><div class="ph-line"></div></div>
+        <div class="tw">
+          <div class="tt">
+            <input class="ts" id="regSearch" placeholder="🔍  Name, phone, city..." oninput="filterRegs()">
+            <select class="tf" id="regFilterStatus" onchange="filterRegs()">
+              <option value="">All Status</option><option value="pending">Pending</option>
+              <option value="approved">Approved</option><option value="rejected">Rejected</option>
+            </select>
+            <select class="tf" id="regFilterType" onchange="filterRegs()">
+              <option value="">All Types</option><option value="player">Player</option><option value="team">Team</option>
+            </select>
+            <select class="tf" id="regFilterUTR" onchange="filterRegs()">
+              <option value="">All Payments</option>
+              <option value="has_utr">UTR Submitted</option>
+              <option value="unverified">⏳ UTR Unverified</option>
+              <option value="verified">✅ UTR Verified</option>
+            </select>
+            <button class="sbtn" style="padding:9px 16px;font-size:.95rem;" onclick="exportCSV()">⬇ CSV</button>
+          </div>
+          <table><thead><tr>
+            <th>ID</th><th>Name</th><th>Age</th><th>Phone</th><th>City</th><th>Role</th><th>Type</th><th>UTR & Payment</th><th>Date</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="regTbody"><tr class="erow"><td colspan="11">Loading...</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="ph"><h1>⚙️ Site Settings</h1><p>Hero, ticker, stats control karo</p><div class="ph-line"></div></div>
+        <div class="sg2">
+          <div class="sc2">
+            <h3>🎯 Hero Text</h3>
+            <div class="fg"><label>Line 1 (Accent)</label><input class="fi" id="sHeroT1" placeholder="NORTHEAST"></div>
+            <div class="fg"><label>Line 2</label><input class="fi" id="sHeroT2" placeholder="CRICKET"></div>
+            <div class="fg"><label>Line 3 (Outline)</label><input class="fi" id="sHeroT3" placeholder="PREMIER"></div>
+            <div class="fg"><label>Badge Text</label><input class="fi" id="sHeroBadge"></div>
+            <div class="fg"><label>Season Label</label><input class="fi" id="sHeroSeason"></div>
+            <div class="fg"><label>Description</label><textarea class="fi ta" id="sHeroDesc"></textarea></div>
+            <button class="sbtn" onclick="saveHero()">💾 Save Hero</button>
+          </div>
+          <div class="sc2">
+            <h3>📊 Hero Stats</h3>
+            <div class="fg"><label>Stat 1 Number</label><input class="fi" id="sStat1Num" placeholder="10"></div>
+            <div class="fg"><label>Stat 1 Label</label><input class="fi" id="sStat1Label" placeholder="Overs Format"></div>
+            <div class="fg"><label>Stat 2 Number</label><input class="fi" id="sStat2Num" placeholder="₹7K+"></div>
+            <div class="fg"><label>Stat 2 Label</label><input class="fi" id="sStat2Label" placeholder="Base Price"></div>
+            <div class="fg"><label>Stat 3 Number</label><input class="fi" id="sStat3Num" placeholder="16–40"></div>
+            <div class="fg"><label>Stat 3 Label</label><input class="fi" id="sStat3Label" placeholder="Age Group"></div>
+            <button class="sbtn" onclick="saveStats()">💾 Save Stats</button>
+          </div>
+          <div class="sc2 full">
+            <h3>📢 Ticker Bar</h3>
+            <div class="fg"><label>Ticker Text</label><textarea class="fi ta" id="sTickerText"></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
+              <div class="fg" style="margin:0"><label>BG Color</label><input class="fi" id="sTickerBg" placeholder="#f0a500"></div>
+              <div class="fg" style="margin:0"><label>Text Color</label><input class="fi" id="sTickerColor" placeholder="#0d1f0f"></div>
+              <div class="fg" style="margin:0"><label>Speed (sec)</label><input class="fi" id="sTickerSpeed" type="number" placeholder="38"></div>
+            </div>
+            <div class="tr">
+              <div><div class="trl">Ticker Visible</div><div class="trs">Show/hide top ticker</div></div>
+              <label class="tog"><input type="checkbox" id="sTickerVisible" checked><span class="togsl"></span></label>
+            </div>
+            <br><button class="sbtn" onclick="saveTicker()">💾 Save Ticker</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEES -->
+      <div class="page" id="page-fees">
+        <div class="ph"><h1>💰 Fees & UPI</h1><p>Registration fees aur payment info</p><div class="ph-line"></div></div>
+        <div class="sg2">
+          <div class="sc2">
+            <h3>💳 Registration Fees</h3>
+            <div class="fg"><label>Player Fee (₹)</label><input class="fi" id="sPlayerFee" type="number" placeholder="500"></div>
+            <div class="fg"><label>Team Fee (₹)</label><input class="fi" id="sTeamFee" type="number" placeholder="30000"></div>
+            <div class="fg"><label>Player Base Price (₹)</label><input class="fi" id="sBaseFee" type="number" placeholder="7000"></div>
+            <button class="sbtn" onclick="saveFees()">💾 Save Fees</button>
+          </div>
+          <div class="sc2">
+            <h3>📱 Payment Details</h3>
+            <div class="fg"><label>UPI ID</label><input class="fi" id="sUpiId" placeholder="yourname@upi"></div>
+            <div class="fg"><label>WhatsApp Number</label><input class="fi" id="sWhatsapp" placeholder="917520947031"></div>
+            <div class="fg"><label>Trial Venue</label><input class="fi" id="sVenue" placeholder="Guwahati, Assam"></div>
+            <div class="fg"><label>📲 WA Group Link (approved players ko)</label><input class="fi" id="sWAGroup" placeholder="https://chat.whatsapp.com/xxxxx"></div>
+            <button class="sbtn" onclick="saveContact()">💾 Save Payment Info</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BROADCAST -->
+      <div class="page" id="page-broadcast">
+        <div class="ph"><h1>📢 Announcements</h1><p>Notice bar, popup aur live broadcast</p><div class="ph-line"></div></div>
+        <div class="sg2">
+          <div class="sc2">
+            <h3>🔔 Bottom Notice Bar</h3>
+            <div class="fg"><label>Notice Text</label><textarea class="fi ta" id="sNoticeText" placeholder="Aaj trial Guwahati mein hai..."></textarea></div>
+            <div class="fg"><label>BG Color</label><input class="fi" id="sNoticeBg" placeholder="#c0392b"></div>
+            <div class="tr">
+              <div><div class="trl">Notice Visible</div></div>
+              <label class="tog"><input type="checkbox" id="sNoticeVisible"><span class="togsl"></span></label>
+            </div>
+            <br><button class="sbtn" onclick="saveNotice()">💾 Save Notice</button>
+          </div>
+          <div class="sc2">
+            <h3>💬 Popup Announcement</h3>
+            <div class="fg"><label>Emoji</label><input class="fi" id="sPopupEmoji" placeholder="📢"></div>
+            <div class="fg"><label>Title</label><input class="fi" id="sPopupTitle" placeholder="IMPORTANT ANNOUNCEMENT"></div>
+            <div class="fg"><label>Message</label><textarea class="fi ta" id="sPopupText"></textarea></div>
+            <div class="fg"><label>Delay (seconds)</label><input class="fi" id="sPopupDelay" type="number" placeholder="2"></div>
+            <div class="tr">
+              <div><div class="trl">Popup Active</div></div>
+              <label class="tog"><input type="checkbox" id="sPopupVisible"><span class="togsl"></span></label>
+            </div>
+            <br><button class="sbtn" onclick="savePopup()">💾 Save Popup</button>
+          </div>
+          <div class="sc2 full">
+            <h3>📡 Live Broadcast Notification</h3>
+            <p style="font-size:13px;color:rgba(255,255,255,.25);margin-bottom:16px;">Saare open users ke screen pe turant notification dikhayega</p>
+            <div class="fg"><label>Title</label><input class="fi" id="sBcastTitle" placeholder="NECPL Update!"></div>
+            <div class="fg"><label>Message</label><textarea class="fi ta" id="sBcastBody" placeholder="Trial schedule change ho gaya hai..."></textarea></div>
+            <button class="sbtn blue" onclick="sendBroadcast()">📡 Send Broadcast Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- REG CONTROL -->
+      <div class="page" id="page-regcontrol">
+        <div class="ph"><h1>🔒 Registration Control</h1><p>Open/close, deadline, countdown</p><div class="ph-line"></div></div>
+        <div class="sg2">
+          <div class="sc2">
+            <h3>🚦 Registration Status</h3>
+            <div class="tr">
+              <div><div class="trl">Registration Open</div><div class="trs">Band karne pe all buttons disable ho jaayenge</div></div>
+              <label class="tog"><input type="checkbox" id="sRegOpen" checked><span class="togsl"></span></label>
+            </div>
+            <div class="fg" style="margin-top:16px;"><label>Custom Message</label><input class="fi" id="sRegMsg" placeholder="Registration 30 April tak open hai!"></div>
+            <div class="fg"><label>Deadline (Date & Time)</label><input class="fi" id="sRegDeadline" type="datetime-local"></div>
+            <button class="sbtn" onclick="saveRegControl()">💾 Save</button>
+          </div>
+          <div class="sc2">
+            <h3>⏱ Countdown Timer</h3>
+            <div class="fg"><label>Target Date</label><input class="fi" id="sCdDate" type="datetime-local"></div>
+            <div class="fg"><label>Title Text</label><input class="fi" id="sCdTitle" placeholder="REGISTRATION CLOSES IN"></div>
+            <button class="sbtn" onclick="saveCountdown()">💾 Save Countdown</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div class="page" id="page-reviews">
+        <div class="ph"><h1>⭐ Player Reviews</h1><p>Website reviews manage karo</p><div class="ph-line"></div></div>
+        <div class="sg3" style="margin-bottom:20px;">
+          <div class="scard sc-g"><div class="scard-glow"></div><div class="snum" id="statReviews">—</div><div class="slbl">Total Reviews</div><div class="sico">⭐</div></div>
+          <div class="scard sc-gr"><div class="scard-glow"></div><div class="snum" id="statAvgRating">—</div><div class="slbl">Avg Rating</div><div class="sico">🌟</div></div>
+        </div>
+        <div class="tw">
+          <div class="tt"><span style="font-family:'Teko',sans-serif;font-size:1.1rem;letter-spacing:2px;color:var(--gold);">ALL REVIEWS</span></div>
+          <table><thead><tr><th>Name</th><th>Role</th><th>City</th><th>Rating</th><th>Review</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="reviewsTbody"><tr class="erow"><td colspan="7">Loading...</td></tr></tbody></table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Live clock
+function updateClock(){
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+  const d = now.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const el = document.getElementById('navClock');
+  if(el) el.textContent = d + '  ·  ' + t;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Animate stat numbers
+function animateNum(el, target){
+  if(isNaN(target)) { el.textContent = target; return; }
+  let start = 0;
+  const dur = 600, step = 16;
+  const inc = target / (dur / step);
+  const t = setInterval(()=>{
+    start = Math.min(start + inc, target);
+    el.textContent = Math.floor(start);
+    if(start >= target) clearInterval(t);
+  }, step);
+}
+
+// Button bindings — poll until doLogin is ready
+function bindButtons(){
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(loginBtn) loginBtn.onclick = function(){ window.doLogin && window.doLogin(); };
+  if(logoutBtn) logoutBtn.onclick = function(){ window.doLogout && window.doLogout(); };
+}
+bindButtons();
+// Also retry after module loads
+setTimeout(bindButtons, 500);
+setTimeout(bindButtons, 1500);
+
+// Standalone login handler — works even before Firebase loads
+function handleLogin(){
+  const u = (document.getElementById('loginUser').value||'').trim();
+  const p = document.getElementById('loginPass').value||'';
+  if(u === 'necpl_admin' && p === 'NECPL@2025'){
+    document.getElementById('loginBtn').textContent = '✅ Logging in...';
+    document.getElementById('loginBtn').style.opacity = '.7';
+    setTimeout(()=>{
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminApp').style.display = 'block';
+      if(window._loadAll) window._loadAll();
+    }, 600);
+  } else {
+    const err = document.getElementById('loginErr');
+    err.style.display = 'block';
+    document.getElementById('loginPass').style.borderColor = 'rgba(231,76,60,.5)';
+    setTimeout(()=>{ err.style.display='none'; document.getElementById('loginPass').style.borderColor='rgba(255,255,255,.08)'; }, 3000);
+  }
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') handleLogin();
+});
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+const cfg = {
+  apiKey:"AIzaSyB8hyDC-OBbeY9DoBYYc4uzwlin4ZQp5Ak",
+  authDomain:"game-4c9ea.firebaseapp.com",
+  databaseURL:"https://game-4c9ea-default-rtdb.firebaseio.com",
+  projectId:"game-4c9ea",
+  storageBucket:"game-4c9ea.firebasestorage.app",
+  messagingSenderId:"406208460533",
+  appId:"1:406208460533:web:3e5ab22587c88a30a1f7bc"
+};
+firebase.initializeApp(cfg);
+
+const ADMIN_USER = 'necpl_admin';
+const ADMIN_PASS = 'NECPL@2025';
+
+const db = firebase.database();
+
+window.doLogin = function(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn');
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    btn.textContent = '✅ Logging in...';
+    btn.style.opacity = '.7';
+    setTimeout(()=>{
+      document.getElementById('loginScreen').style.display='none';
+      document.getElementById('adminApp').style.display='block';
+      loadAll();
+    }, 600);
+  } else {
+    const err = document.getElementById('loginErr');
+    err.style.display='block';
+    document.getElementById('loginPass').style.borderColor='rgba(231,76,60,.5)';
+    setTimeout(()=>{ err.style.display='none'; document.getElementById('loginPass').style.borderColor='rgba(255,255,255,.08)'; }, 3000);
+  }
+};
+
+window.doLogout = function(){
+  document.getElementById('adminApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginBtn').textContent='LOGIN →';
+  document.getElementById('loginBtn').style.opacity='1';
+};
+
+window.showPage = function(name, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+};
+
+window.showToast = function(msg, type=''){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show '+type;
+  setTimeout(()=>t.className='toast', 3200);
+};
+
+let allPlayers = [];
+
+function loadAll(){ loadPlayers(); loadSiteContent(); loadReviews(); }
+window._loadAll = loadAll;
+
+function setStatAnim(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(!isNaN(val) && val !== '—') animateNum(el, parseInt(val));
+  else el.textContent = val;
+}
+
+function loadReviews(){
+  db.ref('testimonials').on('value', snap=>{
+    const reviews = [];
+    snap.forEach(c=> reviews.push({_key:c.key,...c.val()}));
+    setStatAnim('statReviews', reviews.length);
+    const avg = reviews.length ? (reviews.reduce((s,r)=>s+(r.rating||5),0)/reviews.length).toFixed(1) : '—';
+    document.getElementById('statAvgRating').textContent = avg + (reviews.length?'★':'');
+    const tbody = document.getElementById('reviewsTbody');
+    if(!reviews.length){ tbody.innerHTML=`<tr class="erow"><td colspan="7">Koi review nahi abhi</td></tr>`; return; }
+    tbody.innerHTML = [...reviews].reverse().map(r=>`<tr>
+      <td class="tdn">${r.name||'—'}</td><td>${r.role||'—'}</td><td>${r.city||'—'}</td>
+      <td style="color:var(--gold);">${'⭐'.repeat(r.rating||5)}</td>
+      <td style="max-width:240px;white-space:normal;font-size:12px;color:rgba(255,255,255,.5);">"${r.text||''}"</td>
+      <td style="font-size:11px;">${r.date||'—'}</td>
+      <td><button class="ab ab-dl" onclick="deleteReview('${r._key}')">🗑 Delete</button></td>
+    </tr>`).join('');
+  });
+}
+
+window.deleteReview = function(key){
+  if(!confirm('Yeh review delete karna chahte ho?')) return;
+  db.ref('testimonials/'+key).remove().then(()=>showToast('🗑 Review deleted!'));
+};
+
+function loadPlayers(){
+  db.ref('players').on('value', snap=>{
+    allPlayers = [];
+    snap.forEach(c=> allPlayers.push({_key:c.key,...c.val()}));
+    setStatAnim('statTotal', allPlayers.length);
+    setStatAnim('statApproved', allPlayers.filter(p=>p.status==='approved').length);
+    setStatAnim('statPending', allPlayers.filter(p=>(p.status||'pending')==='pending').length);
+    setStatAnim('statTeams', allPlayers.filter(p=>p.type==='team').length);
+    setStatAnim('statUTR', allPlayers.filter(p=>p.utr && p.paymentStatus!=='verified').length);
+    const pc = allPlayers.filter(p=>(p.status||'pending')==='pending').length;
+    const badge = document.getElementById('pendingBadge');
+    badge.textContent = pc; badge.style.display = pc>0?'inline':'none';
+    renderTable('recentTbody', [...allPlayers].reverse().slice(0,8), false);
+    renderTable('regTbody', allPlayers, true);
+  });
+}
+
+window.filterRegs = function(){
+  const q=(document.getElementById('regSearch').value||'').toLowerCase();
+  const st=document.getElementById('regFilterStatus').value;
+  const tp=document.getElementById('regFilterType').value;
+  const utrF=document.getElementById('regFilterUTR').value;
+  const f=allPlayers.filter(p=>{
+    const mQ=!q||(p.name||'').toLowerCase().includes(q)||(p.phone||'').includes(q)||(p.city||'').toLowerCase().includes(q);
+    const mS=!st||(p.status||'pending')===st;
+    const mT=!tp||(p.type||'player')===tp;
+    const mU=!utrF||(utrF==='has_utr'&&p.utr)||(utrF==='unverified'&&p.utr&&p.paymentStatus!=='verified')||(utrF==='verified'&&p.paymentStatus==='verified');
+    return mQ&&mS&&mT&&mU;
+  });
+  renderTable('regTbody', f, true);
+};
+
+function renderTable(tbodyId, list, full){
+  const tbody = document.getElementById(tbodyId);
+  if(!list.length){ tbody.innerHTML=`<tr class="erow"><td colspan="${full?11:6}">Koi record nahi mila</td></tr>`; return; }
+  tbody.innerHTML = list.map((p,i)=>{
+    const st=p.status||'pending';
+    const pid=p.id||('NECPL-'+p._key.slice(-5).toUpperCase());
+    const waNum=(p.phone||'').replace(/\D/g,'');
+    return `<tr style="animation:fadeIn .3s ease ${i*0.03}s both;">
+      ${full?`<td style="font-size:11px;color:rgba(255,255,255,.2);">${pid}</td>`:''}
+      <td class="tdn">${p.name||'—'}</td>
+      ${full?`<td>${p.age||'—'}</td><td>${p.phone||'—'}</td>`:''}
+      <td>${p.city||'—'}</td><td>${p.role||'—'}</td>
+      <td><span style="font-size:10px;background:rgba(255,255,255,.05);padding:2px 8px;border-radius:10px;">${(p.type||'player').toUpperCase()}</span></td>
+      ${full?`<td>${p.utr?`<div style="font-family:monospace;font-size:12px;color:var(--gold);margin-bottom:3px;">${p.utr}</div><span style="font-size:10px;padding:2px 8px;border-radius:10px;${p.paymentStatus==='verified'?'background:rgba(46,204,95,.12);color:var(--gb);border:1px solid rgba(46,204,95,.2)':'background:rgba(240,165,0,.1);color:var(--gold);border:1px solid rgba(240,165,0,.2)'}">${p.paymentStatus==='verified'?'✅ Verified':'⏳ Unverified'}</span>`:'<span style="font-size:11px;color:rgba(255,255,255,.15);">No UTR</span>'}</td>`:''}
+      ${full?`<td style="font-size:11px;">${p.regDate||'—'}</td>`:''}
+      <td><span class="spill ${st}">${st}</span></td>
+      <td><div class="abtns">
+        ${p.utr&&p.paymentStatus!=='verified'?`<button class="ab ab-utr" onclick="verifyUTR('${p._key}','${p.utr||''}')">🔢 Verify</button>`:''}
+        ${st!=='approved'?`<button class="ab ab-ap" onclick="changeStatus('${p._key}','approved')">✅ Approve</button>`:''}
+        ${st!=='rejected'?`<button class="ab ab-rj" onclick="changeStatus('${p._key}','rejected')">❌ Reject</button>`:''}
+        ${waNum?`<button class="ab ab-wa" onclick="window.open('https://wa.me/${waNum}?text=${encodeURIComponent('Hello '+p.name+', NECPL registration regarding.')}','_blank')">📱</button>`:''}
+        <button class="ab ab-dl" onclick="delPlayer('${p._key}','${(p.name||'').replace(/'/g,"\\'")}')">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+window.changeStatus = async function(key, status){
+  await db.ref('players/'+key).update({status});
+  const p=allPlayers.find(x=>x._key===key);
+  if(p&&p.phone){
+    const phone=p.phone.replace(/\D/g,'');
+    const pid=p.id||('NECPL-'+key.slice(-5).toUpperCase());
+    db.ref('siteContent/contact').get().then(snap=>{
+      const waGroup=snap.val()?.waGroup||'';
+      const msg=status==='approved'
+        ?encodeURIComponent(`✅ *NECPL — Registration Approved!* 🏏\n\nNamaste *${p.name}* ji! 🎉\n\nAapki NECPL Season 1 registration *APPROVE* ho gayi hai!\n\n🆔 *ID:* ${pid}\n🏏 *Role:* ${p.role||'—'}\n🏷️ *Type:* ${(p.type||'player').toUpperCase()}\n\n📍 *Trial Venue:* Guwahati, Assam\n📅 Trial ki date alag se bhaiji jaayegi.\n\n${waGroup?`📲 *NECPL WhatsApp Group:*\n${waGroup}\n\n`:''}Bahut bahut badhai! 🏆\n— NECPL Admin Team`)
+        :encodeURIComponent(`❌ *NECPL — Registration Rejected*\n\nNamaste *${p.name}* ji,\n\nAapki NECPL Season 1 registration *REJECT* ho gayi hai.\n\n🆔 *ID:* ${pid}\n\n*Possible reasons:*\n• Payment UTR verify nahi hua\n• Details incomplete thi\n• Age criteria meet nahi hui\n\nKoi sawaal? WhatsApp: +91 7520947031\n— NECPL Admin Team`);
+      window.open(`https://wa.me/${phone.startsWith('91')?phone:'91'+phone.slice(-10)}?text=${msg}`,'_blank');
+      showToast(status==='approved'?'✅ Approved! WA bheja.':'❌ Rejected! WA bheja.', status==='approved'?'success':'error');
+    });
+  } else { showToast(status==='approved'?'✅ Approved!':'❌ Rejected!', status==='approved'?'success':'error'); }
+};
+
+window.verifyUTR = function(key, utr){
+  if(!confirm(`UTR ${utr} verify + approve karna hai?`)) return;
+  const p=allPlayers.find(x=>x._key===key);
+  db.ref('players/'+key).update({paymentStatus:'verified',status:'approved'}).then(()=>{
+    if(p&&p.phone){
+      const phone=p.phone.replace(/\D/g,'');
+      const pid=p.id||('NECPL-'+key.slice(-5).toUpperCase());
+      db.ref('siteContent/contact').get().then(snap=>{
+        const waGroup=snap.val()?.waGroup||'';
+        const msg=encodeURIComponent(`✅ *NECPL — Payment Verified & Approved!* 🏏\n\nNamaste *${p.name}* ji! 🎉\n\nAapki payment *VERIFY* ho gayi!\n\n🆔 *ID:* ${pid}\n💰 *UTR:* ${utr}\n🏏 *Role:* ${p.role||'—'}\n\n📍 Guwahati, Assam\n${waGroup?`\n📲 *WA Group:*\n${waGroup}\n`:''}Bahut badhai! 🏆\n— NECPL Admin`);
+        window.open(`https://wa.me/${phone.startsWith('91')?phone:'91'+phone.slice(-10)}?text=${msg}`,'_blank');
+        showToast('✅ Verified, Approved & WA bheja!','success');
+      });
+    } else { showToast('✅ UTR Verified!','success'); }
+  });
+};
+
+window.delPlayer = function(key,name){ if(!confirm(`"${name}" delete?`)) return; db.ref('players/'+key).remove().then(()=>showToast('🗑 Deleted!')); };
+
+window.exportCSV = function(){
+  const h=['ID','Name','Age','Phone','City','Role','Type','UTR','Date','Status'];
+  const rows=allPlayers.map(p=>[p.id||('NECPL-'+p._key.slice(-5).toUpperCase()),p.name||'',p.age||'',p.phone||'',p.city||'',p.role||'',p.type||'player',p.utr||'',p.regDate||'',p.status||'pending'].map(v=>`"${v}"`).join(','));
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.join(','),...rows].join('\n'));
+  a.download='NECPL_Registrations.csv';a.click();
+  showToast('⬇ CSV downloading...','success');
+};
+
+function loadSiteContent(){
+  db.ref('siteContent').get().then(snap=>{
+    const d=snap.val()||{};
+    const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
+    const sc=(id,v)=>{const el=document.getElementById(id);if(el)el.checked=!!v;};
+    if(d.hero){sv('sHeroT1',d.hero.t1);sv('sHeroT2',d.hero.t2);sv('sHeroT3',d.hero.t3);sv('sHeroBadge',d.hero.badge);sv('sHeroSeason',d.hero.season);sv('sHeroDesc',d.hero.desc);sv('sStat1Num',d.hero.stat1num);sv('sStat1Label',d.hero.stat1label);sv('sStat2Num',d.hero.stat2num);sv('sStat2Label',d.hero.stat2label);sv('sStat3Num',d.hero.stat3num);sv('sStat3Label',d.hero.stat3label);}
+    if(d.ticker){sv('sTickerText',d.ticker.text);sv('sTickerBg',d.ticker.bg);sv('sTickerColor',d.ticker.color);sv('sTickerSpeed',d.ticker.speed);sc('sTickerVisible',d.ticker.visible!==false);}
+    if(d.fees){sv('sPlayerFee',d.fees.pFee);sv('sTeamFee',d.fees.tFee);sv('sBaseFee',d.fees.base);sv('sUpiId',d.fees.upi);}
+    if(d.contact){sv('sWhatsapp',d.contact.whatsapp);sv('sVenue',d.contact.venue);sv('sWAGroup',d.contact.waGroup);}
+    if(d.notice){sv('sNoticeText',d.notice.text);sv('sNoticeBg',d.notice.bg);sc('sNoticeVisible',d.notice.visible===true);}
+    if(d.popup){sv('sPopupEmoji',d.popup.emoji);sv('sPopupTitle',d.popup.title);sv('sPopupText',d.popup.text);sv('sPopupDelay',d.popup.delay);sc('sPopupVisible',d.popup.visible===true);}
+    if(d.regCtrl){sc('sRegOpen',d.regCtrl.open!==false);sv('sRegMsg',d.regCtrl.msg);sv('sRegDeadline',d.regCtrl.deadline);}
+    if(d.countdown){sv('sCdDate',d.countdown.date);sv('sCdTitle',d.countdown.title);}
+  });
+}
+
+const gv=id=>(document.getElementById(id)||{}).value||'';
+const gc=id=>!!(document.getElementById(id)||{}).checked;
+
+window.saveHero=()=>{db.ref('siteContent/hero').set({t1:gv('sHeroT1'),t2:gv('sHeroT2'),t3:gv('sHeroT3'),badge:gv('sHeroBadge'),season:gv('sHeroSeason'),desc:gv('sHeroDesc')}).then(()=>showToast('✅ Hero saved!','success'));};
+window.saveStats=()=>{db.ref('siteContent/hero').update({stat1num:gv('sStat1Num'),stat1label:gv('sStat1Label'),stat2num:gv('sStat2Num'),stat2label:gv('sStat2Label'),stat3num:gv('sStat3Num'),stat3label:gv('sStat3Label')}).then(()=>showToast('✅ Stats saved!','success'));};
+window.saveTicker=()=>{db.ref('siteContent/ticker').set({text:gv('sTickerText'),bg:gv('sTickerBg'),color:gv('sTickerColor'),speed:gv('sTickerSpeed'),visible:gc('sTickerVisible')}).then(()=>showToast('✅ Ticker saved!','success'));};
+window.saveFees=()=>{db.ref('siteContent/fees').update({pFee:gv('sPlayerFee'),tFee:gv('sTeamFee'),base:gv('sBaseFee')}).then(()=>showToast('✅ Fees saved!','success'));};
+window.saveContact=()=>{Promise.all([db.ref('siteContent/fees').update({upi:gv('sUpiId')}),db.ref('siteContent/contact').set({whatsapp:gv('sWhatsapp'),venue:gv('sVenue'),waGroup:gv('sWAGroup')})]).then(()=>showToast('✅ Payment info saved!','success'));};
+window.saveNotice=()=>{db.ref('siteContent/notice').set({text:gv('sNoticeText'),bg:gv('sNoticeBg'),visible:gc('sNoticeVisible')}).then(()=>showToast('✅ Notice saved!','success'));};
+window.savePopup=()=>{db.ref('siteContent/popup').set({emoji:gv('sPopupEmoji'),title:gv('sPopupTitle'),text:gv('sPopupText'),delay:parseInt(gv('sPopupDelay'))||2,visible:gc('sPopupVisible')}).then(()=>showToast('✅ Popup saved!','success'));};
+window.saveRegControl=()=>{db.ref('siteContent/regCtrl').set({open:gc('sRegOpen'),msg:gv('sRegMsg'),deadline:gv('sRegDeadline')}).then(()=>showToast('✅ Reg control saved!','success'));};
+window.saveCountdown=()=>{db.ref('siteContent/countdown').set({date:gv('sCdDate'),title:gv('sCdTitle')}).then(()=>showToast('✅ Countdown saved!','success'));};
+window.sendBroadcast=()=>{
+  const title=gv('sBcastTitle');const body=gv('sBcastBody');
+  if(!title||!body){showToast('❌ Title & message dono bharo!','error');return;}
+  db.ref('broadcasts').push({title,body,ts:Date.now()}).then(()=>{showToast('📡 Broadcast sent!','success');document.getElementById('sBcastTitle').value='';document.getElementById('sBcastBody').value='';});
+};
+</script>
+<script>
+// 🔐 Auto Login + Remember Session
+window.addEventListener('load', function(){
+  const saved = localStorage.getItem('necpl_admin_login');
+  if(saved === 'yes'){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminApp').style.display='block';
+    if(window._loadAll) window._loadAll();
+  }
+});
+
+// modify standalone login success
+const oldHandleLogin = handleLogin;
+handleLogin = function(){
+  const u = (document.getElementById('loginUser').value||'').trim();
+  const p = document.getElementById('loginPass').value||'';
+  if(u === 'necpl_admin' && p === 'NECPL@2025'){
+    localStorage.setItem('necpl_admin_login','yes');
+  }
+  oldHandleLogin();
+};
+
+// logout clear session
+const oldLogout = window.doLogout;
+window.doLogout = function(){
+  localStorage.removeItem('necpl_admin_login');
+  oldLogout();
+};
+</script>
+</body>
+</html>
